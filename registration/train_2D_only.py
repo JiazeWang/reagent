@@ -16,8 +16,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)).replace("/registratio
 from environment import environment as env
 from environment import transformations as tra
 from environment.buffer import Buffer
-from registration.model import Agent
-import registration.model as util_model
+from registration.model_2D_only import Agent
+import registration.model_2D_only as util_model
 import utility.metrics as metrics
 from utility.logger import Logger
 from dataset.dataset import DatasetModelnet40, DatasetLinemod
