@@ -1,9 +1,9 @@
 # ==== DATASET PATHS
-M40_PATH = "/PATH/TO/modelnet40_ply_hdf5_2048"
+M40_PATH = "/data/modelnet40_ply_hdf5_2048"
 SON_PATH = "/PATH/TO/main_split_nobg"
 LM_PATH = "/PATH/TO/BOP19/lm"
 
-BOP_PATH = "/PATH/TO/bop_toolkit"
+BOP_PATH = "/home/jzwang/codes/bop_toolkit"
 
 # ==== REAGENT PARAMETERS
 # iterations and replay buffer
