@@ -6,6 +6,7 @@ import numpy as np
 
 from pointnet import PointNetfeat
 from config import *
+from mv import MVModel
 
 
 class Agent(nn.Module):
@@ -35,24 +36,34 @@ class StateEmbed(nn.Module):
     def __init__(self):
         super().__init__()
         self.model = PointNetfeat(global_feat=True)
+        self.mv_model = MVModel()
         #self.conv1 = nn.Conv1d(IN_CHANNELS, 64, 1)
         #self.conv2 = nn.Conv1d(64, 128, 1)
         #self.conv3 = nn.Conv1d(128, 1024, 1)
+        self.conv0 = nn.Conv1d(2048, 1024, 1)
+        self.conv1 = nn.Conv1d(2048, 1024, 1)
 
     def forward(self, src, tgt):
         B, N, D = src.shape
         # O=(src,tgt) -> S=[Phi(src), Phi(tgt)]
-        emb_src, _, _ = self.model(src.transpose(2, 1))
+        emb_src_p, _, _ = self.model(src.transpose(2, 1))
+        emb_src_mv =  self.mv_model(src)
+        emb_src_all = torch.cat((emb_src_p, emb_src_mv), dim=-1)
+        emb_src_all = self.conv0(emb_src_all.view(emb_src_all.shape[0], emb_src_all.shape[1], -1)).view(emb_src_all.shape[0], 1024)
         #print("emb_src.shape: ", emb_src.shape)
         if BENCHMARK and len(tgt.shape) != 3:
             emb_tgt = tgt  # re-use target embedding from first step
         else:
-            emb_tgt, _, _ = self.model(tgt.transpose(2, 1))
-        state = torch.cat((emb_src, emb_tgt), dim=-1)
+            emb_tgt_p, _, _ = self.model(tgt.transpose(2, 1))
+            emb_tgt_mv = self.mv_model(tgt)
+            emb_tgt_all = torch.cat((emb_tgt_p, emb_tgt_mv), dim=-1)
+            emb_tgt_all = self.conv1(emb_tgt_all.view(emb_tgt_all.shape[0], emb_tgt_all.shape[1], -1)).view(emb_tgt_all.shape[0], 1024)
+        #print("emb_tgt_all.shape:", emb_tgt_all.shape)
+        state = torch.cat((emb_src_all, emb_tgt_all), dim=-1)
         state = state.view(B, -1)
 
 
-        return state, emb_tgt
+        return state, emb_tgt_all
 
     def embed(self, x):
         B, D, N = x.shape
