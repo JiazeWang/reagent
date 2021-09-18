@@ -256,7 +256,7 @@ if __name__ == '__main__':
     if not os.path.exists(os.path.join(code_path, "weights")):
         os.mkdir(os.path.join(code_path, "weights"))
     model_path = os.path.join(code_path, f"weights/{dataset}_{mode}")
-    logger = Logger(log_dir=os.path.join(code_path, f"logs/{dataset}/"), log_name=f"{mode}",
+    logger = Logger(log_dir=os.path.join(code_path, f"logs/{dataset}/"), log_name=f"2D_pn_{mode}",
                     reset_num_timesteps=True)
 
     # TRAINING
