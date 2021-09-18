@@ -4,6 +4,7 @@ from torch.distributions import Categorical
 import torch.nn.functional as F
 import numpy as np
 
+from pointnet import PointNetfeat
 from config import *
 
 
@@ -33,22 +34,23 @@ class StateEmbed(nn.Module):
 
     def __init__(self):
         super().__init__()
-
-        self.conv1 = nn.Conv1d(IN_CHANNELS, 64, 1)
-        self.conv2 = nn.Conv1d(64, 128, 1)
-        self.conv3 = nn.Conv1d(128, 1024, 1)
+        self.model = PointNetfeat(global_feat=True)
+        #self.conv1 = nn.Conv1d(IN_CHANNELS, 64, 1)
+        #self.conv2 = nn.Conv1d(64, 128, 1)
+        #self.conv3 = nn.Conv1d(128, 1024, 1)
 
     def forward(self, src, tgt):
         B, N, D = src.shape
-
         # O=(src,tgt) -> S=[Phi(src), Phi(tgt)]
-        emb_src = self.embed(src.transpose(2, 1))
+        emb_src, _, _ = self.model(src.transpose(2, 1))
+        print("emb_src.shape: ", emb_src.shape)
         if BENCHMARK and len(tgt.shape) != 3:
             emb_tgt = tgt  # re-use target embedding from first step
         else:
-            emb_tgt = self.embed(tgt.transpose(2, 1))
+            emb_tgt, _, _ = self.model(tgt.transpose(2, 1))
         state = torch.cat((emb_src, emb_tgt), dim=-1)
         state = state.view(B, -1)
+
 
         return state, emb_tgt
 
