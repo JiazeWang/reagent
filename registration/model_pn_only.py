@@ -42,8 +42,9 @@ class StateEmbed(nn.Module):
     def forward(self, src, tgt):
         B, N, D = src.shape
         # O=(src,tgt) -> S=[Phi(src), Phi(tgt)]
+        print("src.shape: ", src.shape)
         emb_src, _, _ = self.model(src.transpose(2, 1))
-        #print("emb_src.shape: ", emb_src.shape)
+        print("emb_src.shape: ", emb_src.shape)
         if BENCHMARK and len(tgt.shape) != 3:
             emb_tgt = tgt  # re-use target embedding from first step
         else:
