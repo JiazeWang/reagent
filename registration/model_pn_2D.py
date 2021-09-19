@@ -54,7 +54,7 @@ class StateEmbed(nn.Module):
         if BENCHMARK and len(tgt.shape) != 3:
             emb_tgt = tgt  # re-use target embedding from first step
         else:
-            emb_tgt_p, _, _ = self.embed(tgt.transpose(2, 1))
+            emb_tgt_p = self.embed(tgt.transpose(2, 1))
             emb_tgt_mv = self.mv_model(tgt)
             emb_tgt_all = torch.cat((emb_tgt_p, emb_tgt_mv), dim=-1)
             emb_tgt_all = self.conv1(emb_tgt_all.view(emb_tgt_all.shape[0], emb_tgt_all.shape[1], -1)).view(emb_tgt_all.shape[0], 1024)
