@@ -4,7 +4,7 @@ from torch.distributions import Categorical
 import torch.nn.functional as F
 import numpy as np
 
-from pointnet import PointNetfeat
+#from pointnet import PointNetfeat
 from config import *
 from mv import MVModel
 
@@ -35,18 +35,18 @@ class StateEmbed(nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.model = PointNetfeat(global_feat=True)
+        #self.model = PointNetfeat(global_feat=True)
         self.mv_model = MVModel()
-        #self.conv1 = nn.Conv1d(IN_CHANNELS, 64, 1)
-        #self.conv2 = nn.Conv1d(64, 128, 1)
-        #self.conv3 = nn.Conv1d(128, 1024, 1)
+        self.convp1 = nn.Conv1d(IN_CHANNELS, 64, 1)
+        self.convp2 = nn.Conv1d(64, 128, 1)
+        self.convp3 = nn.Conv1d(128, 1024, 1)
         self.conv0 = nn.Conv1d(2048, 1024, 1)
         self.conv1 = nn.Conv1d(2048, 1024, 1)
 
     def forward(self, src, tgt):
         B, N, D = src.shape
         # O=(src,tgt) -> S=[Phi(src), Phi(tgt)]
-        emb_src_p, _, _ = self.model(src.transpose(2, 1))
+        emb_src_p, = self.embed(src.transpose(2, 1))
         emb_src_mv =  self.mv_model(src)
         emb_src_all = torch.cat((emb_src_p, emb_src_mv), dim=-1)
         emb_src_all = self.conv0(emb_src_all.view(emb_src_all.shape[0], emb_src_all.shape[1], -1)).view(emb_src_all.shape[0], 1024)
@@ -54,7 +54,7 @@ class StateEmbed(nn.Module):
         if BENCHMARK and len(tgt.shape) != 3:
             emb_tgt = tgt  # re-use target embedding from first step
         else:
-            emb_tgt_p, _, _ = self.model(tgt.transpose(2, 1))
+            emb_tgt_p, _, _ = self.embed(tgt.transpose(2, 1))
             emb_tgt_mv = self.mv_model(tgt)
             emb_tgt_all = torch.cat((emb_tgt_p, emb_tgt_mv), dim=-1)
             emb_tgt_all = self.conv1(emb_tgt_all.view(emb_tgt_all.shape[0], emb_tgt_all.shape[1], -1)).view(emb_tgt_all.shape[0], 1024)
@@ -69,9 +69,9 @@ class StateEmbed(nn.Module):
         B, D, N = x.shape
 
         # embedding: BxDxN -> BxFxN
-        x1 = F.relu(self.conv1(x))
-        x2 = F.relu(self.conv2(x1))
-        x3 = self.conv3(x2)
+        x1 = F.relu(self.convp1(x))
+        x2 = F.relu(self.convp2(x1))
+        x3 = self.convp3(x2)
 
         # pooling: BxFxN -> BxFx1
         x_pooled = torch.max(x3, 2, keepdim=True)[0]
