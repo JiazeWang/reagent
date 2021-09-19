@@ -46,7 +46,7 @@ class StateEmbed(nn.Module):
     def forward(self, src, tgt):
         B, N, D = src.shape
         # O=(src,tgt) -> S=[Phi(src), Phi(tgt)]
-        emb_src_p, = self.embed(src.transpose(2, 1))
+        emb_src_p = self.embed(src.transpose(2, 1))
         emb_src_mv =  self.mv_model(src)
         emb_src_all = torch.cat((emb_src_p, emb_src_mv), dim=-1)
         emb_src_all = self.conv0(emb_src_all.view(emb_src_all.shape[0], emb_src_all.shape[1], -1)).view(emb_src_all.shape[0], 1024)
