@@ -48,22 +48,22 @@ class StateEmbed(nn.Module):
         # O=(src,tgt) -> S=[Phi(src), Phi(tgt)]
         emb_src_p = self.embed(src.transpose(2, 1))
         emb_src_mv =  self.mv_model(src)
-        emb_src_all = torch.cat((emb_src_p, emb_src_mv), dim=-1)
-        emb_src_all = self.conv0(emb_src_all.view(emb_src_all.shape[0], emb_src_all.shape[1], -1)).view(emb_src_all.shape[0], 1024)
+        emb_src = torch.cat((emb_src_p, emb_src_mv), dim=-1)
+        emb_src = self.conv0(emb_src.view(emb_src.shape[0], emb_src.shape[1], -1)).view(emb_src.shape[0], 1024)
         #print("emb_src.shape: ", emb_src.shape)
         if BENCHMARK and len(tgt.shape) != 3:
             emb_tgt = tgt  # re-use target embedding from first step
         else:
             emb_tgt_p = self.embed(tgt.transpose(2, 1))
             emb_tgt_mv = self.mv_model(tgt)
-            emb_tgt_all = torch.cat((emb_tgt_p, emb_tgt_mv), dim=-1)
-            emb_tgt_all = self.conv1(emb_tgt_all.view(emb_tgt_all.shape[0], emb_tgt_all.shape[1], -1)).view(emb_tgt_all.shape[0], 1024)
-        #print("emb_tgt_all.shape:", emb_tgt_all.shape)
-        state = torch.cat((emb_src_all, emb_tgt_all), dim=-1)
+            emb_tgt = torch.cat((emb_tgt_p, emb_tgt_mv), dim=-1)
+            emb_tgt = self.conv1(emb_tgt.view(emb_tgt.shape[0], emb_tgt.shape[1], -1)).view(emb_tgt.shape[0], 1024)
+        #print("emb_tgt.shape:", emb_tgt.shape)
+        state = torch.cat((emb_src, emb_tgt), dim=-1)
         state = state.view(B, -1)
 
 
-        return state, emb_tgt_all
+        return state, emb_tgt
 
     def embed(self, x):
         B, D, N = x.shape
