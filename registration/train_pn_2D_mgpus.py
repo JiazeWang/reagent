@@ -186,7 +186,7 @@ def train(agent, logger, dataset, noise_type, epochs, lr, lr_step, alpha, model_
                 'epoch': epoch,
                 'optimizer_state_dict': optimizer.state_dict()
             }
-            util_model.save(agent, f"mgpu_{model_path}.zip", infos)
+            util_model.save(agent, f"{model_path}_mgpu.zip", infos)
             model_epoch_path = os.path.join(code_path, f"weights/mgpus_pn_2d_{dataset}_{mode}_{str(epoch)}")
             util_model.save(agent, f"{model_epoch_path}.zip", infos)
         logger.dump(step=epoch)
