@@ -46,6 +46,8 @@ class MVModel(nn.Module):
     def get_img(self, pc):
         img = self._get_img(pc)
         img = torch.tensor(img).float()
+        print("device", next(self.parameters()).device)
+        print("img.shape", img.shape)
         img = img.to(next(self.parameters()).device)
         assert len(img.shape) == 3
         img = img.unsqueeze(3)
