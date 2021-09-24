@@ -255,6 +255,8 @@ if __name__ == '__main__':
     if not os.path.exists(os.path.join(code_path, "logs")):
         os.mkdir(os.path.join(code_path, "logs"))
     if not os.path.exists(os.path.join(code_path, "weights")):
+
+
         os.mkdir(os.path.join(code_path, "weights"))
     model_path = os.path.join(code_path, f"weights/{dataset}_{mode}")
     logger = Logger(log_dir=os.path.join(code_path, f"logs/{dataset}/"), log_name=f"mGPUs_2D_pn_{mode}",
@@ -283,8 +285,8 @@ if __name__ == '__main__':
 
         if dataset == "m40":
             print("  loading pretrained weights...")
-            if os.path.exists(os.path.join(code_path, f"weights/m40_pretrain.zip")):
-                util_model.load(agent, os.path.join(code_path, f"weights/m40_pretrain.zip"))
+            if os.path.exists(os.path.join(code_path, f"weights/m40_pretrain_mgpu.zip")):
+                util_model.load(agent, os.path.join(code_path, f"weights/m40_pretrain_mgpu.zip"))
             else:
                 raise FileNotFoundError(f"No pretrained weights found at "
                                         f"{os.path.join(code_path, f'weights/m40_pretrain.zip')}. Run with "

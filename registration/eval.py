@@ -10,8 +10,8 @@ import config as cfg
 cfg.BENCHMARK = True
 from environment import environment as env
 from environment import transformations as tra
-from registration.model import Agent
-import registration.model as util_model
+from registration.model_pn_2D import Agent
+import registration.model_pn_2D as util_model
 import utility.metrics as metrics
 from utility.visualization import CloudVisualizer, OutlineVisualizer
 
