@@ -186,8 +186,8 @@ def train(agent, logger, dataset, noise_type, epochs, lr, lr_step, alpha, model_
                 'epoch': epoch,
                 'optimizer_state_dict': optimizer.state_dict()
             }
-            util_model.save(agent, f"{model_path}_mgpu.zip", infos)
-            model_epoch_path = os.path.join(code_path, f"weights/mgpus_pn_2d_{dataset}_{mode}_{str(epoch)}")
+            util_model.save(agent, f"{model_path}_mgpu_shared.zip", infos)
+            model_epoch_path = os.path.join(code_path, f"weights/shared_mgpus_pn_2d_{dataset}_{mode}_{str(epoch)}")
             util_model.save(agent, f"{model_epoch_path}.zip", infos)
         logger.dump(step=epoch)
 
@@ -259,7 +259,7 @@ if __name__ == '__main__':
 
         os.mkdir(os.path.join(code_path, "weights"))
     model_path = os.path.join(code_path, f"weights/{dataset}_{mode}")
-    logger = Logger(log_dir=os.path.join(code_path, f"logs/{dataset}/"), log_name=f"mGPUs_2D_pn_{mode}",
+    logger = Logger(log_dir=os.path.join(code_path, f"logs/{dataset}/"), log_name=f"shared_mGPUs_2D_pn_{mode}",
                     reset_num_timesteps=True)
     if torch.cuda.device_count() > 1:
         print("Using multiple GPUs")
@@ -285,8 +285,8 @@ if __name__ == '__main__':
 
         if dataset == "m40":
             print("  loading pretrained weights...")
-            if os.path.exists(os.path.join(code_path, f"weights/m40_pretrain_mgpu.zip")):
-                util_model.load(agent, os.path.join(code_path, f"weights/m40_pretrain_mgpu.zip"))
+            if os.path.exists(os.path.join(code_path, f"weights/m40_pretrain_mgpu_shared.zip")):
+                util_model.load(agent, os.path.join(code_path, f"weights/m40_pretrain_mgpu_shared.zip"))
             else:
                 raise FileNotFoundError(f"No pretrained weights found at "
                                         f"{os.path.join(code_path, f'weights/m40_pretrain.zip')}. Run with "

@@ -41,7 +41,6 @@ class StateEmbed(nn.Module):
         self.convp2 = nn.Conv1d(64, 128, 1)
         self.convp3 = nn.Conv1d(128, 1024, 1)
         self.conv0 = nn.Conv1d(2048, 1024, 1)
-        self.conv1 = nn.Conv1d(2048, 1024, 1)
 
     def forward(self, src, tgt):
         B, N, D = src.shape
@@ -57,7 +56,7 @@ class StateEmbed(nn.Module):
             emb_tgt_p = self.embed(tgt.transpose(2, 1))
             emb_tgt_mv = self.mv_model(tgt)
             emb_tgt = torch.cat((emb_tgt_p, emb_tgt_mv), dim=-1)
-            emb_tgt = self.conv1(emb_tgt.view(emb_tgt.shape[0], emb_tgt.shape[1], -1)).view(emb_tgt.shape[0], 1024)
+            emb_tgt = self.conv0(emb_tgt.view(emb_tgt.shape[0], emb_tgt.shape[1], -1)).view(emb_tgt.shape[0], 1024)
         #print("emb_tgt.shape:", emb_tgt.shape)
         state = torch.cat((emb_src, emb_tgt), dim=-1)
         state = state.view(B, -1)
