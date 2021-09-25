@@ -13,6 +13,7 @@ from environment import transformations as tra
 from registration.model_pn_2D import Agent
 import registration.model_pn_2D as util_model
 import utility.metrics as metrics
+import torch.nn as nn
 from utility.visualization import CloudVisualizer, OutlineVisualizer
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -143,7 +144,8 @@ if __name__ == '__main__':
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False)
 
     print("  loading weights...")
-    agent = Agent().to(DEVICE)
+    #agent = Agent().to(DEVICE)
+    agent = nn.DataParallel(Agent()).to(DEVICE)
     if os.path.exists(pretrain):
         util_model.load(agent, pretrain)
     else:
