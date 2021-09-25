@@ -126,7 +126,7 @@ if __name__ == '__main__':
     if args.dataset.startswith("m40"):
         from dataset.dataset import DatasetModelnet40
         test_dataset = DatasetModelnet40("test" if "cat" in args.dataset else "val", "jitter")
-        pretrain = os.path.join(code_path, f"weights/m40_{args.mode}.zip")  # same weights for M40 and SON
+        pretrain = os.path.join(code_path, f"weights/m40_{args.mode}_mgpu.zip")  # same weights for M40 and SON
         bop_results_path = ""
     elif args.dataset == "son":
         from dataset.dataset import DatasetScanObjectNN
