@@ -43,13 +43,13 @@ class StateEmbed(nn.Module):
         #self.conv0 = nn.Conv1d(2048, 1024, 1)
 
         self.projected_layer = nn.Sequential(
-            nn.Linear(2048, 1024),
-            nn.BatchNorm1d(1024),
+            nn.Linear(4096, 2048),
+            nn.BatchNorm1d(2048),
             nn.ReLU(inplace=True),
-            nn.Linear(1024， 1024),
-            nn.BatchNorm1d(1024),
+            nn.Linear(2048, 2048),
+            nn.BatchNorm1d(2048),
             nn.ReLU(inplace=True),
-            nn.Linear(1024， 1024)
+            nn.Linear(2048, 2048)
         )
 
     def forward(self, src, tgt):
@@ -58,7 +58,7 @@ class StateEmbed(nn.Module):
         emb_src_p = self.embed(src.transpose(2, 1))
         emb_src_mv =  self.mv_model(src)
         emb_src = torch.cat((emb_src_p, emb_src_mv), dim=-1)
-        emb_src = self.projected_layer(emb_src.view(emb_src.shape[0], emb_src.shape[1], -1)).view(emb_src.shape[0], 1024)
+        #emb_src = self.projected_layer(emb_src.view(emb_src.shape[0], emb_src.shape[1], -1)).view(emb_src.shape[0], 1024)
         #print("emb_src.shape: ", emb_src.shape)
         if BENCHMARK and len(tgt.shape) != 3:
             emb_tgt = tgt  # re-use target embedding from first step
@@ -66,9 +66,11 @@ class StateEmbed(nn.Module):
             emb_tgt_p = self.embed(tgt.transpose(2, 1))
             emb_tgt_mv = self.mv_model(tgt)
             emb_tgt = torch.cat((emb_tgt_p, emb_tgt_mv), dim=-1)
-            emb_tgt = self.projected_layer(emb_tgt.view(emb_tgt.shape[0], emb_tgt.shape[1], -1)).view(emb_tgt.shape[0], 1024)
+            #emb_tgt = self.projected_layer(emb_tgt.view(emb_tgt.shape[0], emb_tgt.shape[1], -1)).view(emb_tgt.shape[0], 1024)
         #print("emb_tgt.shape:", emb_tgt.shape)
         state = torch.cat((emb_src, emb_tgt), dim=-1)
+        #print("state.shape:", state.shape)
+        state = self.projected_layer(state)
         state = state.view(B, -1)
 
 
