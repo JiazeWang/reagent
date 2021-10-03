@@ -63,6 +63,7 @@ class StateEmbed(nn.Module):
         )
 
 
+
     def forward(self, src, tgt):
         B, N, D = src.shape
         # O=(src,tgt) -> S=[Phi(src), Phi(tgt)]

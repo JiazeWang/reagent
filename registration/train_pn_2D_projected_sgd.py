@@ -29,7 +29,7 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def train(agent, logger, dataset, noise_type, epochs, lr, lr_step, alpha, model_path, reward_mode=""):
     #optimizer = torch.optim.Adam(agent.parameters(), lr=lr, amsgrad=True)
-    optimizer = torch.optim.optim.SGD(agent.parameters(), lr=lr, momentum=0.9)
+    optimizer = torch.optim.SGD(agent.parameters(), lr=lr, momentum=0.9)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, lr_step, 0.5)
 
     Dataset = DatasetModelnet40 if dataset == "m40" else DatasetLinemod
