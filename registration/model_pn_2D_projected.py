@@ -44,23 +44,24 @@ class StateEmbed(nn.Module):
 
         self.projected_layer = nn.Sequential(
             nn.Linear(2048, 1024),
-            nn.BatchNorm1d(1024),
+            #nn.BatchNorm1d(1024),
             nn.ReLU(inplace=True),
             nn.Linear(1024, 1024),
-            nn.BatchNorm1d(1024),
+            #nn.BatchNorm1d(1024),
             nn.ReLU(inplace=True),
             nn.Linear(1024, 1024)
         )
-
+        """
         self.projected_layer_src_tgt = nn.Sequential(
             nn.Linear(2048, 2048),
-            nn.BatchNorm1d(2048),
+            #nn.BatchNorm1d(2048),
             nn.ReLU(inplace=True),
             nn.Linear(2048, 2048),
-            nn.BatchNorm1d(2048),
+            #nn.BatchNorm1d(2048),
             nn.ReLU(inplace=True),
             nn.Linear(2048, 2048)
         )
+        """
 
 
 
@@ -84,8 +85,8 @@ class StateEmbed(nn.Module):
         #print("emb_tgt.shape:", emb_tgt.shape)
         state = torch.cat((emb_src, emb_tgt), dim=-1)
         #print("state.shape:", state.shape)
-        state = self.projected_layer_src_tgt(state)
-        state = state.view(B, -1)
+        #state = self.projected_layer_src_tgt(state)
+        #state = state.view(B, -1)
 
 
         return state, emb_tgt
