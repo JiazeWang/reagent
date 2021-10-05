@@ -7,7 +7,7 @@ BOP_PATH = "/home/jzwang/codes/bop_toolkit"
 
 # ==== REAGENT PARAMETERS
 # iterations and replay buffer
-BATCH_SIZE = 32
+BATCH_SIZE = 128
 ITER_TRAIN, ITER_EVAL = 10, 10
 NUM_TRAJ = 4
 
