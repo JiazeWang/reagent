@@ -30,10 +30,10 @@ class Agent(nn.Module):
         action_2d, value_2d = self.actor_critic2d(state_2d)
 
         # reshape a to B x axis x [step, sign]
-        action_t = action_3d[0]*0.5 + action_2d[0]*0.5
-        action_r = action_3d[1]*0.5 + action_2d[1]*0.5
+        action_t = action_3d[0]*0.9 + action_2d[0]*0.9
+        action_r = action_3d[1]*0.9 + action_2d[1]*0.9
         action = [action_t, action_r]
-        value = value_3d*0.5 + value_2d*0.5
+        value = value_3d*0.9 + value_2d*0.9
         action = (action[0].view(-1, 3, 2 * NUM_STEPSIZES + 1),
                   action[1].view(-1, 3, 2 * NUM_STEPSIZES + 1))
         value = value.view(-1, 1, 1)
