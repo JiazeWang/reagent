@@ -17,8 +17,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)).replace("/registratio
 from environment import environment as env
 from environment import transformations as tra
 from environment.buffer import Buffer
-from registration.model_pn_2D_projected import Agent
-import registration.model_pn_2D_projected as util_model
+from registration.model_pn_2D_action_add import Agent
+import registration.model_pn_2D_action_add as util_model
 import utility.metrics as metrics
 from utility.logger import Logger
 from dataset.dataset import DatasetModelnet40, DatasetLinemod
@@ -186,7 +186,7 @@ def train(agent, logger, dataset, noise_type, epochs, lr, lr_step, alpha, model_
                 'epoch': epoch,
                 'optimizer_state_dict': optimizer.state_dict()
             }
-            util_model.save(agent, f"{model_path}_projected.zip", infos)
+            util_model.save(agent, f"{model_path}_action.zip", infos)
             #model_epoch_path = os.path.join(code_path, f"weights/e100_shared_mgpus_pn_2d_{dataset}_{mode}_{str(epoch)}")
             #util_model.save(agent, f"{model_epoch_path}.zip", infos)
         logger.dump(step=epoch)
@@ -259,7 +259,7 @@ if __name__ == '__main__':
 
         os.mkdir(os.path.join(code_path, "weights"))
     model_path = os.path.join(code_path, f"weights/{dataset}_{mode}")
-    logger = Logger(log_dir=os.path.join(code_path, f"logs/{dataset}/"), log_name=f"projected_{mode}",
+    logger = Logger(log_dir=os.path.join(code_path, f"logs/{dataset}/"), log_name=f"action_{mode}",
                     reset_num_timesteps=True)
     if torch.cuda.device_count() > 1:
         print("Using multiple GPUs")
@@ -270,7 +270,7 @@ if __name__ == '__main__':
 
     if args.mode == "pretrain" and dataset == "m40":
         print(f"Training: dataset '{dataset}'  - mode '{args.mode}'")
-        train(agent, logger, dataset, noise_type="clean", epochs=50, lr=1e-3, lr_step=10, alpha=0,
+        train(agent, logger, dataset, noise_type="clean", epochs=100, lr=1e-3, lr_step=20, alpha=0,
               model_path=model_path)
     else:
         if args.mode == "il":
@@ -285,17 +285,17 @@ if __name__ == '__main__':
 
         if dataset == "m40":
             print("  loading pretrained weights...")
-            if os.path.exists(os.path.join(code_path, f"weights/m40_pretrain_projected.zip")):
-                util_model.load(agent, os.path.join(code_path, f"weights/m40_pretrain_projected.zip"))
+            if os.path.exists(os.path.join(code_path, f"weights/m40_pretrain_action.zip")):
+                util_model.load(agent, os.path.join(code_path, f"weights/m40_pretrain_action.zip"))
             else:
                 raise FileNotFoundError(f"No pretrained weights found at "
                                         f"{os.path.join(code_path, f'weights/m40_pretrain.zip')}. Run with "
                                         f"'pretrain' first or download the provided weights.")
 
         noise_type = "jitter" if dataset == "m40" else "segmentation"
-        epochs = 50 if dataset == "m40" else 200
+        epochs = 100 if dataset == "m40" else 200
         lr = 1e-4 if dataset == "m40" else 1e-3
-        lr_step = 10 if dataset == "m40" else 40
+        lr_step = 20 if dataset == "m40" else 40
 
         train(agent, logger, dataset, noise_type, epochs=epochs, lr=lr, lr_step=lr_step,
               alpha=alpha, reward_mode=reward_mode, model_path=model_path)
