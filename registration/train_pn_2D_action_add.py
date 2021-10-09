@@ -186,7 +186,7 @@ def train(agent, logger, dataset, noise_type, epochs, lr, lr_step, alpha, model_
                 'epoch': epoch,
                 'optimizer_state_dict': optimizer.state_dict()
             }
-            util_model.save(agent, f"{model_path}_action.zip", infos)
+            util_model.save(agent, f"{model_path}_action_e100.zip", infos)
             #model_epoch_path = os.path.join(code_path, f"weights/e100_shared_mgpus_pn_2d_{dataset}_{mode}_{str(epoch)}")
             #util_model.save(agent, f"{model_epoch_path}.zip", infos)
         logger.dump(step=epoch)
@@ -293,9 +293,9 @@ if __name__ == '__main__':
                                         f"'pretrain' first or download the provided weights.")
 
         noise_type = "jitter" if dataset == "m40" else "segmentation"
-        epochs = 50 if dataset == "m40" else 200
+        epochs = 100 if dataset == "m40" else 200
         lr = 1e-4 if dataset == "m40" else 1e-3
-        lr_step = 10 if dataset == "m40" else 40
+        lr_step = 20 if dataset == "m40" else 40
 
         train(agent, logger, dataset, noise_type, epochs=epochs, lr=lr, lr_step=lr_step,
               alpha=alpha, reward_mode=reward_mode, model_path=model_path)
