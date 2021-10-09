@@ -259,7 +259,7 @@ if __name__ == '__main__':
 
         os.mkdir(os.path.join(code_path, "weights"))
     model_path = os.path.join(code_path, f"weights/{dataset}_{mode}")
-    logger = Logger(log_dir=os.path.join(code_path, f"logs/{dataset}/"), log_name=f"action_{mode}",
+    logger = Logger(log_dir=os.path.join(code_path, f"logs/{dataset}/"), log_name=f"action_e100_{mode}",
                     reset_num_timesteps=True)
     if torch.cuda.device_count() > 1:
         print("Using multiple GPUs")
