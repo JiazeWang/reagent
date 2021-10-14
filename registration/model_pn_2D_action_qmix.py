@@ -77,8 +77,8 @@ class QMix(nn.Module):
         #print("agent_qs.shape, w1.shape, b1.shape: ",agent_qs.shape, w1.shape, b1.shape)
         #agent_qs.shape, w1.shape, b1.shape:  torch.Size([32, 1, 2]) torch.Size([64, 2, 1024]) torch.Size([64, 1, 1024])
         hidden = F.elu(torch.bmm(agent_qs, w1) + b1)
-        hidden_t = F.elu(torch.bmm(action_t, w1) + b1)
-        hidden_r = F.elu(torch.bmm(action_r, w1) + b1)
+        hidden_t = F.elu(torch.bmm(action_t, w1))
+        hidden_r = F.elu(torch.bmm(action_r, w1))
         # Second layer
         w_final = torch.abs(self.hyper_w_final(states))
         w_final = w_final.view(-1, self.embed_dim, 1)
