@@ -40,15 +40,12 @@ class StateEmbed(nn.Module):
         self.convp1 = nn.Conv1d(IN_CHANNELS, 64, 1)
         self.convp2 = nn.Conv1d(64, 128, 1)
         self.convp3 = nn.Conv1d(128, 1024, 1)
-        #self.conv0 = nn.Conv1d(2560, 1024, 1)
+        self.conv0 = nn.Conv1d(2560, 1024, 1)
         self.projected_layer = nn.Sequential(
-            nn.Linear(2560, 1024),
+            nn.Linear(2560, 128),
             #nn.BatchNorm1d(1024),
             nn.ReLU(inplace=True),
-            nn.Linear(1024, 1024),
-            #nn.BatchNorm1d(1024),
-            nn.ReLU(inplace=True),
-            nn.Linear(1024, 1024),
+            nn.Linear(128, 1024),
         )
 
     def forward(self, src, tgt):
