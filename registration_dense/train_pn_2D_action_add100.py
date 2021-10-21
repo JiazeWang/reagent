@@ -285,8 +285,8 @@ if __name__ == '__main__':
 
         if dataset == "m40":
             print("  loading pretrained weights...")
-            if os.path.exists(os.path.join(code_path, f"weights/m40_pretrain_dense.zip")):
-                util_model.load(agent, os.path.join(code_path, f"weights/m40_pretrain_dense.zip"))
+            if os.path.exists(os.path.join(code_path, f"weights/m40_pretrain_dense_e100.zip")):
+                util_model.load(agent, os.path.join(code_path, f"weights/m40_pretrain_dense_e100.zip"))
             else:
                 raise FileNotFoundError(f"No pretrained weights found at "
                                         f"{os.path.join(code_path, f'weights/m40_pretrain.zip')}. Run with "
