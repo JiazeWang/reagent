@@ -33,11 +33,11 @@ def train(agent, logger, dataset, noise_type, epochs, lr, lr_step, alpha, model_
 
     Dataset = DatasetModelnet40 if dataset == "m40" else DatasetLinemod
     train_dataset = Dataset("train", noise_type)
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=cfg.BATCH_SIZE, shuffle=True)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=cfg.BATCH_SIZE, shuffle=True, num_workers=16)
     val_dataset = Dataset("val", noise_type)
-    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=cfg.BATCH_SIZE, shuffle=False)
+    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=cfg.BATCH_SIZE, shuffle=False, num_workers=16)
     test_dataset = Dataset("test" if dataset == "m40" else "eval", noise_type)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=cfg.BATCH_SIZE, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=cfg.BATCH_SIZE, shuffle=False, num_workers=16)
 
     RANDOM_STATE = np.random.get_state()  # otherwise loader produces deterministic samples after iter 1
     losses_bc, losses_ppo, train_rewards, final_rewards = [], [], [], []
