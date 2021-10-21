@@ -45,6 +45,8 @@ class StateEmbed(nn.Module):
             nn.Linear(2560, 128),
             #nn.BatchNorm1d(1024),
             nn.ReLU(inplace=True),
+            nn.Linear(128, 128),
+            nn.ReLU(inplace=True),
             nn.Linear(128, 1024),
         )
 
