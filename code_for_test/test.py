@@ -18,17 +18,18 @@ if __name__ == '__main__':
     print("label.shape:", labels[0])
     visdata = data[0][:,:3]
     """
-    source = np.load("source.npy")
+    source = np.load("target.npy")
     visdata = source
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(visdata)
-    o3d.visualization.draw_geometries([pcd])
+    #pcd = o3d.geometry.PointCloud()
+    #pcd.points = o3d.utility.Vector3dVector(visdata)
+    #o3d.visualization.draw_geometries([pcd])
     #visdata = torch.tensor(data[0][:,:3].reshape(1, -1, 3))
     visdata = torch.tensor(visdata.reshape(1, -1, 3))
-    print("visdata.shape:", visdata.shape)
+    #print("visdata.shape:", visdata.shape)
     pc_views = PCViews()
 
-    img = pc_views.get_img(points=visdata).numpy()
+    img = pc_views.get_img_V2(points=visdata).numpy()
+    print("img.shape: ", img.shape)
     fig, axs = plt.subplots(2,3)
     fig.suptitle('test for six views')
     axs[0][0].imshow(img[0], interpolation='none')

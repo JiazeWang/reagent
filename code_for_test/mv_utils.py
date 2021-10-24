@@ -102,7 +102,7 @@ def distribute(depth, _x, _y, size_x, size_y, image_height, image_width):
     # to prevent error
     extended_x = (extended_x % image_height)
     extended_y = (extended_y % image_width)
-
+    #print("extended_x.shape: ",extended_x.shape)
     # [batch, num_points, size_x, size_y]
     distance = torch.abs((extended_x - _x.unsqueeze(2).unsqueeze(3))
                          * (extended_y - _y.unsqueeze(2).unsqueeze(3)))
@@ -118,7 +118,10 @@ def distribute(depth, _x, _y, size_x, size_y, image_height, image_width):
     coord_max = image_height * image_width
     true_coordinates = (true_extended_x.view([batch, -1]) * image_width) + true_extended_y.view(
         [batch, -1])
-    true_coordinates[~masked_points.view([batch, -1])] = coord_max
+    #print("true_coordinates.shape: ",true_coordinates[0])
+    #np.save("true_coordinates.npy", true_coordinates.cpu().detach().numpy())
+    true_coordinates[~masked_points.view([batch, -1])] = coord_max-1
+    np.save("t_true_coordinatesnew.npy", true_coordinates.cpu().detach().numpy())
     weight_scattered = torch.zeros(
         [batch, image_width * image_height],
         device=depth.device).scatter_add(1, coordinates.long(), weight)
@@ -129,7 +132,8 @@ def distribute(depth, _x, _y, size_x, size_y, image_height, image_width):
     weighed_value_scattered = torch.zeros(
         [batch, image_width * image_height],
         device=depth.device).scatter_add(1, coordinates.long(), weighted_value)
-
+    #print("image_width * image_height:", image_width * image_height)
+    #print("coordinates.long():",coordinates.long().max())
     return weighed_value_scattered,  weight_scattered
 
 
@@ -170,6 +174,45 @@ def points2depth(points, image_height, image_width, size_x=4, size_y=4):
 
     return depth_recovered
 
+
+def points2depth_V2(points, image_height, image_width, size_x=4, size_y=4):
+    """
+    :param points: [B, num_points, 3]
+    :param image_width:
+    :param image_height:
+    :param size_x:
+    :param size_y:
+    :return:
+        depth_recovered: [B, image_width, image_height]
+    """
+
+    epsilon = torch.tensor([1e-12], requires_grad=False, device=points.device)
+    # epsilon not needed, kept here to ensure exact replication of old version
+    coord_x = (points[:, :, 0] / (points[:, :, 2] + epsilon)) * (image_width / image_height)  # [batch, num_points]
+
+    coord_y = (points[:, :, 1] / (points[:, :, 2] + epsilon))  # [batch, num_points]
+
+    batch, total_points, _ = points.size()
+    depth = points[:, :, 2]  # [batch, num_points]
+    # pdb.set_trace()
+    _x = ((coord_x + 1) * image_height) / 2
+    print("_x:", _x[0].max(),_x[0].min())
+    _y = ((coord_y + 1) * image_width) / 2
+    print("_y:", _y[0].max(),_y[0].min())
+    weighed_value_scattered, weight_scattered = distribute(
+        depth=depth,
+        _x=_x,
+        _y=_y,
+        size_x=size_x,
+        size_y=size_y,
+        image_height=image_height,
+        image_width=image_width)
+
+    depth_recovered = (weighed_value_scattered / weight_scattered).view([
+        batch, image_height, image_width
+    ])
+
+    return depth_recovered
 
 # source: https://discuss.pytorch.org/t/batched-index-select/9115/6
 def batched_index_select(inp, dim, index):
@@ -269,6 +312,33 @@ class PCViews:
             translation=self.translation.repeat(b, 1, 1))
 
         img = points2depth(
+            points=_points,
+            image_height=RESOLUTION,
+            image_width=RESOLUTION,
+            size_x=1,
+            size_y=1,
+        )
+        return img
+
+
+    def get_img_V2(self, points):
+        """Get image based on the prespecified specifications.
+
+        Args:
+            points (torch.tensor): of size [B, _, 3]
+        Returns:
+            img (torch.tensor): of size [B * self.num_views, RESOLUTION,
+                RESOLUTION]
+        """
+        b, _, _ = points.shape
+        v = self.translation.shape[0]
+
+        _points = self.point_transform(
+            points=torch.repeat_interleave(points, v, dim=0),
+            rot_mat=self.rot_mat.repeat(b, 1, 1),
+            translation=self.translation.repeat(b, 1, 1))
+
+        img = points2depth_V2(
             points=_points,
             image_height=RESOLUTION,
             image_width=RESOLUTION,
