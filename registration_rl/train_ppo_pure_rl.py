@@ -187,7 +187,7 @@ def train(agent, logger, dataset, noise_type, epochs, lr, lr_step, alpha, model_
                 'epoch': epoch,
                 'optimizer_state_dict': optimizer.state_dict()
             }
-            util_model.save(agent, f"{model_path}_ppo.zip", infos)
+            util_model.save(agent, f"{model_path}_rl.zip", infos)
             #model_epoch_path = os.path.join(code_path, f"weights/e100_shared_mgpus_pn_2d_{dataset}_{mode}_{str(epoch)}")
             #util_model.save(agent, f"{model_epoch_path}.zip", infos)
         logger.dump(step=epoch)
@@ -286,8 +286,8 @@ if __name__ == '__main__':
 
         if dataset == "m40":
             print("  loading pretrained weights...")
-            if os.path.exists(os.path.join(code_path, f"weights/m40_pretrain_ppo.zip")):
-                util_model.load(agent, os.path.join(code_path, f"weights/m40_pretrain_ppo.zip"))
+            if os.path.exists(os.path.join(code_path, f"weights/m40_pretrain_rl.zip")):
+                util_model.load(agent, os.path.join(code_path, f"weights/m40_pretrain_rl.zip"))
             else:
                 raise FileNotFoundError(f"No pretrained weights found at "
                                         f"{os.path.join(code_path, f'weights/m40_pretrain.zip')}. Run with "
