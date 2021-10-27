@@ -49,7 +49,7 @@ def evaluate(agent, test_loader, dataset_name, bop_results_path="", visualize=Fa
                     vis.update(current_source[0, :, :3].cpu().numpy())
 
             for step in range(cfg.ITER_EVAL):
-                if cfg.BENCHMARK:
+                if 0:
                     # re-use target embedding from first step (faster)
                     state_emb, action_logit, state_value, target = agent(current_source, target)
                 else:
