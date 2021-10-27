@@ -10,8 +10,8 @@ import config as cfg
 cfg.BENCHMARK = True
 from environment import environment as env
 from environment import transformations as tra
-from registration_rl.model import Agent
-import registration_rl.model as util_model
+from registration_mail.model_fusion import Agent
+import registration_mail.model_fusion as util_model
 import utility.metrics as metrics
 import torch.nn as nn
 from utility.visualization import CloudVisualizer, OutlineVisualizer
