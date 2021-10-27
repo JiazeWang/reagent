@@ -5,7 +5,7 @@ from tqdm import tqdm
 from prefetch_generator import BackgroundGenerator
 
 import sys
-sys.path.append(os.path.dirname(os.path.abspath(__file__)).replace("/registration_rl", ""))
+sys.path.append(os.path.dirname(os.path.abspath(__file__)).replace("/registration_mail", ""))
 import config as cfg
 cfg.BENCHMARK = True
 from environment import environment as env
@@ -122,11 +122,11 @@ if __name__ == '__main__':
                         help='If selected, shows a visualization of the registration process.')
     args = parser.parse_args()
 
-    code_path = os.path.dirname(os.path.abspath(__file__)).replace("/registration_rl", "")
+    code_path = os.path.dirname(os.path.abspath(__file__)).replace("/registration_mail", "")
     if args.dataset.startswith("m40"):
         from dataset.dataset import DatasetModelnet40
         test_dataset = DatasetModelnet40("test" if "cat" in args.dataset else "val", "jitter")
-        pretrain = os.path.join(code_path, f"weights/m40_{args.mode}_rl.zip")  # same weights for M40 and SON
+        pretrain = os.path.join(code_path, f"weights/m40_{args.mode}_fusion7.zip")  # same weights for M40 and SON
         bop_results_path = ""
     elif args.dataset == "son":
         from dataset.dataset import DatasetScanObjectNN
