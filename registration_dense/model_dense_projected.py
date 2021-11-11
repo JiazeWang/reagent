@@ -55,6 +55,8 @@ class StateEmbed(nn.Module):
         # O=(src,tgt) -> S=[Phi(src), Phi(tgt)]
         emb_src_p = self.embed(src.transpose(2, 1))
         emb_src_mv =  self.mv_model(src)
+        emb_src_p = F.normalize(emb_src_p, p=2, dim=1)
+        emb_src_mv = F.normalize(emb_src_mv, p=2, dim=1)
         emb_src = torch.cat((emb_src_p, emb_src_mv), dim=1)
         emb_src = torch.max(emb_src, 2, keepdim=True)[0].squeeze()
         #print("emb_src.shape", emb_src.shape)
@@ -64,10 +66,11 @@ class StateEmbed(nn.Module):
         else:
             emb_tgt_p = self.embed(tgt.transpose(2, 1))
             emb_tgt_mv = self.mv_model(tgt)
+            emb_tgt_p = F.normalize(emb_tgt_p, p=2, dim=1)
+            emb_tgt_mv = F.normalize(emb_tgt_mv, p=2, dim=1)
             emb_tgt = torch.cat((emb_tgt_p, emb_tgt_mv), dim=1)
             emb_tgt = torch.max(emb_tgt, 2, keepdim=True)[0].squeeze()
             emb_tgt = self.projected_layer(emb_tgt)
-        #print("emb_tgt.shape:", emb_tgt.shape)
         state = torch.cat((emb_src, emb_tgt), dim=-1)
         state = state.view(B, -1)
 
