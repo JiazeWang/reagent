@@ -3,11 +3,10 @@ import torch.nn as nn
 from torch.distributions import Categorical
 import torch.nn.functional as F
 import numpy as np
-
+import torch.nn.functional as F
 #from pointnet import PointNetfeat
 from config import *
 from mv import MVModel
-
 
 
 class Agent(nn.Module):
@@ -15,139 +14,57 @@ class Agent(nn.Module):
     def __init__(self):
         super().__init__()
 
-        self.Agent2D = Agent2D()
-        self.Agent3D = Agent3D()
-        self.Qmix = QMix()
-
-    def forward(self, src, tgt):
-        # O(src, tgt) -> S
-        state_2d, action_2d, value_2d, emb_tgt_2d = self.Agent2D(src, tgt)
-        state_3d, action_3d, value_3d, emb_tgt_3d = self.Agent3D(src, tgt)
-        state_3d = F.normalize(state_3d, p=2, dim=1)
-        state_2d = F.normalize(state_2d, p=2, dim=1)
-        state = torch.cat((state_2d, state_3d), dim=1)
-        #print("22222:", torch.sum(state_2d[0]), torch.mean(state_2d[0]),torch.max(state_2d[0]),torch.min(state_2d[0]))
-        #print("33333:", torch.sum(state_3d[0]), torch.mean(state_3d[0]),torch.max(state_3d[0]),torch.min(state_3d[0]))
-        value = torch.cat((value_2d.view(-1, 1, 1), value_3d.view(-1, 1, 1)), dim=2)
-        #print(value_2d[0], value_3d[0])
-        action_t = torch.cat((action_2d[0].view(action_2d[0].shape[0], -1, 1), action_3d[0].view(action_3d[0].shape[0], -1, 1)), dim = 2)
-        action_r = torch.cat((action_2d[1].view(action_2d[1].shape[0], -1, 1), action_3d[1].view(action_3d[1].shape[0], -1, 1)), dim = 2)
-        value_new, action_t_new, action_r_new = self.Qmix(value, state, action_t, action_r)
-        state = [state_3d, state_2d]
-        action = [action_t_new, action_r_new]
-        value = value_new
-        emb_tgt = [emb_tgt_3d, emb_tgt_2d]
-        return state, action, value, emb_tgt
-
-
-
-
-class QMix(nn.Module):
-    def __init__(self):
-        super(QMix, self).__init__()
-
-        self.n_agents = 2
-        self.state_dim = 4096
-
-        self.embed_dim = 1024
-        hypernet_embed = 1024
-        self.hyper_w_1 = nn.Sequential(nn.Linear(self.state_dim, hypernet_embed),
-                                           nn.ReLU(),
-                                           nn.Linear(hypernet_embed, self.embed_dim * self.n_agents))
-        self.hyper_w_final = nn.Sequential(nn.Linear(self.state_dim, hypernet_embed),
-                                           nn.ReLU(),
-                                           nn.Linear(hypernet_embed, self.embed_dim))
-        # State dependent bias for hidden layer
-        self.hyper_b_1 = nn.Linear(self.state_dim, self.embed_dim)
-        # V(s) instead of a bias for the last layers
-        self.V = nn.Sequential(nn.Linear(self.state_dim, self.embed_dim),
-                               nn.ReLU(),
-                               nn.Linear(self.embed_dim, 1))
-
-    def forward(self, agent_qs, states, action_t, action_r):
-        bs = agent_qs.size(0)
-        states = states.reshape(-1, self.state_dim)
-        agent_qs = agent_qs.view(-1, 1, self.n_agents)
-        # First layer
-        w1 = torch.abs(self.hyper_w_1(states))
-        b1 = self.hyper_b_1(states)
-        w1 = w1.view(-1, self.n_agents, self.embed_dim)
-        b1 = b1.view(-1, 1, self.embed_dim)
-        hidden = F.elu(torch.bmm(agent_qs, w1))
-        hidden_t = F.elu(torch.bmm(action_t, w1))
-        hidden_r = F.elu(torch.bmm(action_r, w1))
-        # Second layer
-        w_final = torch.abs(self.hyper_w_final(states))
-        w_final = w_final.view(-1, self.embed_dim, 1)
-        # State-dependent bias
-        v = self.V(states).view(-1, 1, 1)
-        #print("V:", v[0])
-        y = torch.bmm(hidden, w_final)
-        #print("hidden_t.shape", hidden_t.shape)
-        #print("w_final.shape", w_final.shape)
-        #hidden_t.shape torch.Size([32, 33, 1024])
-        #w_final.shape torch.Size([32, 1024, 1])
-        #y_t.shape torch.Size([32, 33, 1])
-        y_t = torch.bmm(hidden_t, w_final)
-        y_r = torch.bmm(hidden_r, w_final)
-        # Reshape and return
-        q_tot = y.view(bs, -1, 1)
-        y_t = y_t.view(bs, 3, -1)
-        y_r = y_r.view(bs, 3, -1)
-        return q_tot, y_t, y_r
-
-
-
-class Agent2D(nn.Module):
-
-    def __init__(self):
-        super().__init__()
-
-        self.state_emb_2d = StateEmbed2D()
-        self.actor_critic2d = ActorCriticHead()
-
-    def forward(self, src, tgt):
-        # O(src, tgt) -> S
-        state_2d, emb_tgt_2d = self.state_emb_2d(src, tgt)
-        # S -> a, v
-        action_2d, value_2d = self.actor_critic2d(state_2d)
-
-        # reshape a to B x axis x [step, sign]
-        action_t = action_2d[0]
-        action_r = action_2d[1]
-        action = [action_t, action_r]
-        value = value_2d
-        action = (action[0].view(-1, 3, 2 * NUM_STEPSIZES + 1),
-                  action[1].view(-1, 3, 2 * NUM_STEPSIZES + 1))
-        value = value.view(-1, 1, 1)
-        state = state_2d
-        emb_tgt = emb_tgt_2d
-        return state, action, value, emb_tgt
-
-
-class Agent3D(nn.Module):
-
-    def __init__(self):
-        super().__init__()
-
         self.state_emb_3d = StateEmbed3D()
+        self.state_emb_2d = StateEmbed2D()
         self.actor_critic3d = ActorCriticHead()
-
+        self.actor_critic2d = ActorCriticHead()
+        #self.bn0 = nn.BatchNorm1d(2048, momentum=0.1)
+        #self.bn1 = nn.BatchNorm1d(2048, momentum=0.1)
+        self.bn0 = nn.Sequential(
+            nn.BatchNorm1d(2048, momentum=0.1),
+            nn.Linear(2048, 2048),
+            nn.BatchNorm1d(2048, momentum=0.1),
+            nn.ReLU()
+        )
+        self.bn1 = nn.Sequential(
+            nn.BatchNorm1d(2048, momentum=0.1),
+            nn.Linear(2048, 2048),
+            nn.BatchNorm1d(2048, momentum=0.1),
+            nn.ReLU()
+        )
+        self.weight = nn.Sequential(
+            nn.Linear(4096, 256),
+            nn.ReLU(),
+            nn.Linear(256, 2),
+            nn.Softmax(dim=1)
+        )
     def forward(self, src, tgt):
         # O(src, tgt) -> S
         state_3d, emb_tgt_3d = self.state_emb_3d(src, tgt)
+
+        state_2d, emb_tgt_2d = self.state_emb_2d(src, tgt)
         # S -> a, v
+        state_3d = self.bn0(state_3d)
+        state_2d = self.bn1(state_2d)
+        #print(state_3d[0], state_2d[0])
         action_3d, value_3d = self.actor_critic3d(state_3d)
+        action_2d, value_2d = self.actor_critic2d(state_2d)
+        state = torch.cat((state_3d, state_2d),dim=1)
+        weight = self.weight(state)
+        weight0 = weight[:,0].reshape(-1, 1)
+        weight1 = weight[:,1].reshape(-1, 1)
+        print(weight0[0], weight1[0])
+
         # reshape a to B x axis x [step, sign]
-        action_t = action_3d[0]
-        action_r = action_3d[1]
+        action_t = action_3d[0]*weight0 + action_2d[0]*weight1
+        action_r = action_3d[1]*weight0 + action_2d[1]*weight1
         action = [action_t, action_r]
-        value = value_3d
+        value = value_3d*weight0 + value_2d*weight1
         action = (action[0].view(-1, 3, 2 * NUM_STEPSIZES + 1),
                   action[1].view(-1, 3, 2 * NUM_STEPSIZES + 1))
         value = value.view(-1, 1, 1)
-        state = state_3d
-        emb_tgt = emb_tgt_3d
+        state = [state_3d, state_2d]
+        emb_tgt = [emb_tgt_3d, emb_tgt_2d]
         return state, action, value, emb_tgt
 
 

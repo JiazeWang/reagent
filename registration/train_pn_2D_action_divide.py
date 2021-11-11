@@ -17,8 +17,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)).replace("/registratio
 from environment import environment as env
 from environment import transformations as tra
 from environment.buffer import Buffer
-from registration.model_pn_2D_action_qmix import Agent
-import registration.model_pn_2D_action_qmix as util_model
+from registration.model_pn_2D_action_divide import Agent
+import registration.model_pn_2D_action_divide as util_model
 import utility.metrics as metrics
 from utility.logger import Logger
 from dataset.dataset import DatasetModelnet40, DatasetLinemod
