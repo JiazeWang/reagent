@@ -49,14 +49,17 @@ class StateEmbed(nn.Module):
             nn.ReLU(inplace=True),
             nn.Linear(128, 1024),
         )
-
+        self.bn0 = nn.BatchNorm1d(1024, momentum=0.1)
+        self.bn1 = nn.BatchNorm1d(1536, momentum=0.1)
+        self.bn2 = nn.BatchNorm1d(1024, momentum=0.1)
+        self.bn3 = nn.BatchNorm1d(1536, momentum=0.1)
     def forward(self, src, tgt):
         B, N, D = src.shape
         # O=(src,tgt) -> S=[Phi(src), Phi(tgt)]
         emb_src_p = self.embed(src.transpose(2, 1))
         emb_src_mv =  self.mv_model(src)
-        emb_src_p = F.normalize(emb_src_p, p=2, dim=1)
-        emb_src_mv = F.normalize(emb_src_mv, p=2, dim=1)
+        emb_src_p = self.bn0(emb_src_p)
+        emb_src_mv = self.bn1(emb_src_mv)
         emb_src = torch.cat((emb_src_p, emb_src_mv), dim=1)
         emb_src = torch.max(emb_src, 2, keepdim=True)[0].squeeze()
         #print("emb_src.shape", emb_src.shape)
@@ -66,8 +69,8 @@ class StateEmbed(nn.Module):
         else:
             emb_tgt_p = self.embed(tgt.transpose(2, 1))
             emb_tgt_mv = self.mv_model(tgt)
-            emb_tgt_p = F.normalize(emb_tgt_p, p=2, dim=1)
-            emb_tgt_mv = F.normalize(emb_tgt_mv, p=2, dim=1)
+            emb_tgt_p = self.bn2(emb_tgt_p)
+            emb_tgt_mv = self.bn3(emb_tgt_mv)
             emb_tgt = torch.cat((emb_tgt_p, emb_tgt_mv), dim=1)
             emb_tgt = torch.max(emb_tgt, 2, keepdim=True)[0].squeeze()
             emb_tgt = self.projected_layer(emb_tgt)
