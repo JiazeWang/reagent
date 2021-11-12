@@ -18,15 +18,15 @@ class Agent(nn.Module):
         self.Agent2D = Agent2D()
         self.Agent3D = Agent3D()
         self.Qmix = QMix()
-        self.bn0 = nn.BatchNorm1d(2048, momentum=0.1)
-        self.bn1 = nn.BatchNorm1d(2048, momentum=0.1)
+        #self.bn0 = nn.BatchNorm1d(2048, momentum=0.1)
+        #self.bn1 = nn.BatchNorm1d(2048, momentum=0.1)
 
     def forward(self, src, tgt):
         # O(src, tgt) -> S
         state_2d, action_2d, value_2d, emb_tgt_2d = self.Agent2D(src, tgt)
         state_3d, action_3d, value_3d, emb_tgt_3d = self.Agent3D(src, tgt)
-        state_3d = self.bn0(state_3d)
-        state_2d = self.bn1(state_2d)
+        #state_3d = self.bn0(state_3d)
+        #state_2d = self.bn1(state_2d)
         state = torch.cat((state_2d, state_3d), dim=1)
         #print("22222:", torch.sum(state_2d[0]), torch.mean(state_2d[0]),torch.max(state_2d[0]),torch.min(state_2d[0]))
         #print("33333:", torch.sum(state_3d[0]), torch.mean(state_3d[0]),torch.max(state_3d[0]),torch.min(state_3d[0]))
