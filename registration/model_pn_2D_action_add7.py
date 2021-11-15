@@ -18,7 +18,22 @@ class Agent(nn.Module):
         self.state_emb_2d = StateEmbed2D()
         self.actor_critic3d = ActorCriticHead()
         self.actor_critic2d = ActorCriticHead()
+        self.weight3d = nn.Sequential(
+            nn.Linear(2048, 256),
+            nn.ReLU(),
+            nn.Linear(256, 256),
+            nn.ReLU(),
+            nn.Linear(256, 1),
+        )
 
+        self.weight2d = nn.Sequential(
+            nn.Linear(2048, 256),
+            nn.ReLU(),
+            nn.Linear(256, 256),
+            nn.ReLU(),
+            nn.Linear(256, 1),
+        )
+        self.softmax = nn.Softmax(dim=1)
     def forward(self, src, tgt):
         # O(src, tgt) -> S
         state_3d, emb_tgt_3d = self.state_emb_3d(src, tgt)
@@ -28,12 +43,18 @@ class Agent(nn.Module):
         action_3d, value_3d = self.actor_critic3d(state_3d)
 
         action_2d, value_2d = self.actor_critic2d(state_2d)
-
+        w_3d = torch.abs(self.weight3d(state_3d))
+        w_2d = torch.abs(self.weight2d(state_2d))
+        #weight = torch.cat((w_3d, w_2d), dim=1)
+        #weight = self.softmax(weight)
+        #w_3d = weight[:,0].unsqueeze(1)
+        #w_2d = weight[:,1].unsqueeze(1)
+        #print(w_3d[0], w_2d[0])
         # reshape a to B x axis x [step, sign]
-        action_t = action_3d[0]*0.7 + action_2d[0]*0.3
-        action_r = action_3d[1]*0.7 + action_2d[1]*0.3
+        action_t = action_3d[0]*w_3d + action_2d[0]*w_2d
+        action_r = action_3d[1]*w_3d + action_2d[1]*w_2d
         action = [action_t, action_r]
-        value = value_3d*0.7 + value_2d*0.3
+        value = value_3d*w_3d + value_2d*w_2d
         action = (action[0].view(-1, 3, 2 * NUM_STEPSIZES + 1),
                   action[1].view(-1, 3, 2 * NUM_STEPSIZES + 1))
         value = value.view(-1, 1, 1)
