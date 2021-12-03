@@ -18,20 +18,13 @@ class Agent(nn.Module):
         self.Agent2D = Agent2D()
         self.Agent3D = Agent3D()
         self.Qmix = QMix()
-        #self.bn0 = nn.BatchNorm1d(2048, momentum=0.1)
-        #self.bn1 = nn.BatchNorm1d(2048, momentum=0.1)
 
     def forward(self, src, tgt):
         # O(src, tgt) -> S
         state_2d, action_2d, value_2d, emb_tgt_2d = self.Agent2D(src, tgt)
         state_3d, action_3d, value_3d, emb_tgt_3d = self.Agent3D(src, tgt)
-        #state_3d = self.bn0(state_3d)
-        #state_2d = self.bn1(state_2d)
         state = torch.cat((state_2d, state_3d), dim=1)
-        #print("22222:", torch.sum(state_2d[0]), torch.mean(state_2d[0]),torch.max(state_2d[0]),torch.min(state_2d[0]))
-        #print("33333:", torch.sum(state_3d[0]), torch.mean(state_3d[0]),torch.max(state_3d[0]),torch.min(state_3d[0]))
         value = torch.cat((value_2d.view(-1, 1, 1), value_3d.view(-1, 1, 1)), dim=2)
-        #print(value_2d[0], value_3d[0])
         action_t = torch.cat((action_2d[0].view(action_2d[0].shape[0], -1, 1), action_3d[0].view(action_3d[0].shape[0], -1, 1)), dim = 2)
         action_r = torch.cat((action_2d[1].view(action_2d[1].shape[0], -1, 1), action_3d[1].view(action_3d[1].shape[0], -1, 1)), dim = 2)
         value_new, action_t_new, action_r_new = self.Qmix(value, state, action_t, action_r)
@@ -61,7 +54,6 @@ class QMix(nn.Module):
                                            nn.Linear(hypernet_embed, self.embed_dim))
         # State dependent bias for hidden layer
         self.hyper_b_1 = nn.Linear(self.state_dim, self.embed_dim)
-        # V(s) instead of a bias for the last layers
         self.V = nn.Sequential(nn.Linear(self.state_dim, self.embed_dim),
                                nn.ReLU(),
                                nn.Linear(self.embed_dim, 1))
@@ -83,13 +75,7 @@ class QMix(nn.Module):
         w_final = w_final.view(-1, self.embed_dim, 1)
         # State-dependent bias
         v = self.V(states).view(-1, 1, 1)
-        #print("V:", v[0])
         y = torch.bmm(hidden, w_final)
-        #print("hidden_t.shape", hidden_t.shape)
-        #print("w_final.shape", w_final.shape)
-        #hidden_t.shape torch.Size([32, 33, 1024])
-        #w_final.shape torch.Size([32, 1024, 1])
-        #y_t.shape torch.Size([32, 33, 1])
         y_t = torch.bmm(hidden_t, w_final)
         y_r = torch.bmm(hidden_r, w_final)
         # Reshape and return

@@ -45,12 +45,6 @@ class Agent(nn.Module):
         action_2d, value_2d = self.actor_critic2d(state_2d)
         w_3d = torch.abs(self.weight3d(state_3d))
         w_2d = torch.abs(self.weight2d(state_2d))
-        #weight = torch.cat((w_3d, w_2d), dim=1)
-        #weight = self.softmax(weight)
-        #w_3d = weight[:,0].unsqueeze(1)
-        #w_2d = weight[:,1].unsqueeze(1)
-        #print(w_3d[0], w_2d[0])
-        # reshape a to B x axis x [step, sign]
         action_t = action_3d[0]*w_3d + action_2d[0]*w_2d
         action_r = action_3d[1]*w_3d + action_2d[1]*w_2d
         action = [action_t, action_r]

@@ -82,10 +82,7 @@ class QMix(nn.Module):
         # Second layer
         w_final = torch.abs(self.hyper_w_final(states))
         w_final = w_final.view(-1, self.embed_dim, 1)
-        # State-dependent bias
-        #v = self.V(states).view(-1, 1, 1)
-        # Compute final output
-        #print("hidden.shape, w_final.shape, v.shape: ",hidden.shape, w_final.shape, v.shape)
+
         y = torch.bmm(hidden, w_final)
         y_t = torch.bmm(hidden_t, w_final)
         y_r = torch.bmm(hidden_r, w_final)

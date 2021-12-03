@@ -293,9 +293,9 @@ if __name__ == '__main__':
                                         f"'pretrain' first or download the provided weights.")
 
         noise_type = "jitter" if dataset == "m40" else "segmentation"
-        epochs = 100 if dataset == "m40" else 200
+        epochs = 100 if dataset == "m40" else 100
         lr = 1e-4 if dataset == "m40" else 1e-3
-        lr_step = 20 if dataset == "m40" else 40
+        lr_step = 20 if dataset == "m40" else 20
 
         train(agent, logger, dataset, noise_type, epochs=epochs, lr=lr, lr_step=lr_step,
               alpha=alpha, reward_mode=reward_mode, model_path=model_path)
