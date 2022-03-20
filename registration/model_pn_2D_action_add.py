@@ -25,6 +25,8 @@ class Agent(nn.Module):
 
         state_2d, emb_tgt_2d = self.state_emb_2d(src, tgt)
         # S -> a, v
+        print("state_3d, emb_tgt_3d:", state_3d.shape, emb_tgt_3d.shape)
+        print("state_2d, emb_tgt_2d:", state_2d.shape, emb_tgt_2d.shape)
         action_3d, value_3d = self.actor_critic3d(state_3d)
 
         action_2d, value_2d = self.actor_critic2d(state_2d)
